@@ -1,8 +1,46 @@
+body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: hsla(0, 0%, 0%, 0%);
+  overflow: hidden;
+}
+
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+.App {
+  width: 100vw;
+  height: 100vh;
+}
+
+#wheel-container {
+  width: 600px;
+  height: 600px;
+  margin: auto;
+  position: relative;
+  background-color: transparent;
+}
+
 #wheel {
   margin: auto;
   width: 512px;
   height: 512px;
   border-radius: 50%;
+  display: inline-block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+}
+
+#wheel {
   background: 
     conic-gradient(
     hsl(360, 100%, 50%),
@@ -17,14 +55,32 @@
     )
 }
 
-#wheel::after {
-  content: '';
+#filter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: inline-block;
   width: 512px;
   height: 512px;
   border-radius: 50%;
-  background: radial-gradient(
-    hsla(0, 0%, 100%, 100%),
-    hsla(0, 0%, 100%, 0%)
-  );
+  z-index: 2;
+}
+
+#filter.saturation {
+  background-image: radial-gradient(hsl(0, 0%, 50%) 0%, transparent 78%);
+}
+
+#filter.lightness {
+  background-image: radial-gradient(black 0%, hsla(0, 0%, 0%, 30%) 26%, transparent 52%, white 78%);
+}
+
+.spoke {
+  overflow: hidden;
+  position: absolute;
+  top: 0; 
+  right: 0;
+  width: 50%; 
+  height: 50%;
+  transform-origin: 0% 100%;
 }
