@@ -6,12 +6,15 @@ function Wheel() {
 
   const [rgba, setRgba] = useState()
   const [lightness, setLightness] = useState('100%')
+  const [rotation, setRotation] = useState('0deg')
+  const [scale, setScale] = useState('100%');
+  const [tracking, setTracking] = useState(false)
 
   const wheelEl = 'html-wheel', wheelImg = 'wheel-image';
 
-  function getCoords(e) {
+  function getCoords(e, element) {
       // Returns coordinates of an event within an element.
-      let rect = e.target.getBoundingClientRect();
+      let rect = element.getBoundingClientRect();
       let eX = e.clientX - rect.left;
       let eY = e.clientY - rect.top;
       return({x: eX, y: eY})
@@ -31,7 +34,7 @@ function Wheel() {
   function getPixelColor(e) {
     //Sets RGBA state value to color of a pixel at event location.
 
-    const coords = getCoords(e)
+    const coords = getCoords(e, e.target)
 
     let img = e.target
     let canvas = document.createElement('canvas');
@@ -47,6 +50,22 @@ function Wheel() {
     
   }
 
+
+  function moveDropper(e) {
+    if (!tracking) {
+      return
+    }
+
+    const coords = getCoords(e, document.getElementById(wheelEl))
+    const size = document.getElementById(wheelEl).offsetWidth / 2
+    const sides =  {x: coords.x - size, y: coords.y + size};
+
+    const radAngle = Math.atan(sides.x / sides.y)
+    const degAngle = radAngle * 180 / Math.PI;
+
+    console.log(degAngle);
+  }
+
   return (
     <div>
       <div id="wheel-container">
@@ -57,6 +76,9 @@ function Wheel() {
           }}/>
         </div>
         <img id={wheelImg} onClick={(e) => getPixelColor(e, wheelImg)}/>
+        <div id="color-selector">
+          <div className="eyedropper" onMouseDown={() => setTracking(true)} onMouseMove={(e) => moveDropper(e)} onMouseUp={() => setTracking(false)}/>
+        </div>
       </div>
       <div id="color-display" style={{width: "48px", height: "48px", backgroundColor: rgba}} />
       <div className="slidecontainer">
