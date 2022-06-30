@@ -63,7 +63,6 @@ function Wheel() {
     const radAngle = Math.atan(sides.x / sides.y)
     let degAngle = (radAngle * 180) / Math.PI;
 
-    console.log(sides) 
     if (sides.y < 0) {
       degAngle += 180
     }
@@ -71,11 +70,14 @@ function Wheel() {
     else if (sides.x < 0) {
       degAngle += 360
     }
-  
-
-    console.log(degAngle);
+    
+    const hypotenuse = Math.sqrt(sides.x**2 + sides.y**2);
+    const ratio = 50 -((hypotenuse / size) * 50);
 
     e.target.style.transform = `rotate(${degAngle}deg)`;
+
+
+    document.querySelectorAll('.eyedropper').forEach((eyedropper) => eyedropper.style.top = `${ratio}%`)
   }
 
   return (
