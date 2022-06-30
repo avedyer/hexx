@@ -58,12 +58,24 @@ function Wheel() {
 
     const coords = getCoords(e, document.getElementById(wheelEl))
     const size = document.getElementById(wheelEl).offsetWidth / 2
-    const sides =  {x: coords.x - size, y: coords.y + size};
+    const sides =  {x: coords.x - size, y: -coords.y + size};
 
     const radAngle = Math.atan(sides.x / sides.y)
-    const degAngle = radAngle * 180 / Math.PI;
+    let degAngle = (radAngle * 180) / Math.PI;
+
+    console.log(sides) 
+    if (sides.y < 0) {
+      degAngle += 180
+    }
+
+    else if (sides.x < 0) {
+      degAngle += 360
+    }
+  
 
     console.log(degAngle);
+
+    e.target.style.transform = `rotate(${degAngle}deg)`;
   }
 
   return (
@@ -76,8 +88,8 @@ function Wheel() {
           }}/>
         </div>
         <img id={wheelImg} onClick={(e) => getPixelColor(e, wheelImg)}/>
-        <div id="color-selector">
-          <div className="eyedropper" onMouseDown={() => setTracking(true)} onMouseMove={(e) => moveDropper(e)} onMouseUp={() => setTracking(false)}/>
+        <div id="color-selector" onMouseDown={() => setTracking(true)} onMouseMove={(e) => moveDropper(e)} onMouseUp={() => setTracking(false)}>
+          <div className="eyedropper" />
         </div>
       </div>
       <div id="color-display" style={{width: "48px", height: "48px", backgroundColor: rgba}} />
