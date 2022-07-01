@@ -50,8 +50,40 @@ function Wheel() {
     
   }
 
-
   function moveDropper(e) {
+    if (!tracking) {
+      return
+    }
+
+    const coords = getCoords(e, document.getElementById(wheelEl));
+    const size = document.getElementById(wheelEl).offsetWidth / 2
+    const sides =  {x: coords.x - size, y: -coords.y + size};
+    const hypotenuse = Math.sqrt(sides.x**2 + sides.y**2);
+
+    if (hypotenuse > size) {
+      return
+    }
+
+    const margin = hypotenuse + 21 - size // overspill from edge of color wheel, accounting for size of dropper
+
+    if (margin > 0) {
+
+      //Gradually adjust position of dropper to avoid spilling over edge
+
+      const radAngle = Math.abs(Math.atan(sides.x / sides.y))
+      const ratio = radAngle * 2 / Math.PI
+
+      sides.x > 0 ? coords.x = coords.x - (ratio * margin / 2) : coords.x = coords.x + (ratio * margin / 2)
+      sides.y > 0 ? coords.y = coords.y + ((1 - ratio) * margin / 2) : coords.y = coords.y - ((1 - ratio) * margin / 2);
+    }
+
+    const eyedropper = document.querySelector('.eyedropper')
+    eyedropper.style.top = `${coords.y - 10}px` //10 px adjustment centers mouse within the dropper
+    eyedropper.style.left = `${coords.x - 10}px`
+  }
+
+
+  function rotateDropper(e) {
     if (!tracking) {
       return
     }
@@ -59,6 +91,7 @@ function Wheel() {
     const coords = getCoords(e, document.getElementById(wheelEl))
     const size = document.getElementById(wheelEl).offsetWidth / 2
     const sides =  {x: coords.x - size, y: -coords.y + size};
+    
 
     const radAngle = Math.atan(sides.x / sides.y)
     let degAngle = (radAngle * 180) / Math.PI;
@@ -91,7 +124,7 @@ function Wheel() {
         </div>
         <img id={wheelImg} onClick={(e) => getPixelColor(e, wheelImg)}/>
         <div id="color-selector" onMouseDown={() => setTracking(true)} onMouseMove={(e) => moveDropper(e)} onMouseUp={() => setTracking(false)}>
-          <div className="eyedropper" />
+          <div className="eyedropper" style={{top: '0', left: 'calc(50% - 10px)'}}/>
         </div>
       </div>
       <div id="color-display" style={{width: "48px", height: "48px", backgroundColor: rgba}} />
