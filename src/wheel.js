@@ -31,12 +31,11 @@ function Wheel() {
       });
   }
 
-  function getPixelColor(e) {
+  function getPixelColor(coords, element) {
     //Sets RGBA state value to color of a pixel at event location.
 
-    const coords = getCoords(e, e.target)
 
-    let img = e.target
+    let img = element
     let canvas = document.createElement('canvas');
 
     canvas.width = img.width;
@@ -48,12 +47,14 @@ function Wheel() {
 
     setRgba(`rgba(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]}, ${pixelData[3] / 255})`)
     
-  }
+  }   
 
   function moveDropper(e) {
     if (!tracking) {
       return
     }
+
+    e.stopPropagation()
 
     const coords = getCoords(e, document.getElementById(wheelEl));
     const size = document.getElementById(wheelEl).offsetWidth / 2
@@ -61,6 +62,7 @@ function Wheel() {
     const hypotenuse = Math.sqrt(sides.x**2 + sides.y**2);
 
     if (hypotenuse > size) {
+      setTracking(false)
       return
     }
 
@@ -80,42 +82,14 @@ function Wheel() {
     const eyedropper = document.querySelector('.eyedropper')
     eyedropper.style.top = `${coords.y - 10}px` //10 px adjustment centers mouse within the dropper
     eyedropper.style.left = `${coords.x - 10}px`
+
+    getPixelColor(coords, document.getElementById(wheelImg))
   }
 
-
-  function rotateDropper(e) {
-    if (!tracking) {
-      return
-    }
-
-    const coords = getCoords(e, document.getElementById(wheelEl))
-    const size = document.getElementById(wheelEl).offsetWidth / 2
-    const sides =  {x: coords.x - size, y: -coords.y + size};
-    
-
-    const radAngle = Math.atan(sides.x / sides.y)
-    let degAngle = (radAngle * 180) / Math.PI;
-
-    if (sides.y < 0) {
-      degAngle += 180
-    }
-
-    else if (sides.x < 0) {
-      degAngle += 360
-    }
-    
-    const hypotenuse = Math.sqrt(sides.x**2 + sides.y**2);
-    const ratio = 50 -((hypotenuse / size) * 50);
-
-    e.target.style.transform = `rotate(${degAngle}deg)`;
-
-
-    document.querySelectorAll('.eyedropper').forEach((eyedropper) => eyedropper.style.top = `${ratio}%`)
-  }
 
   return (
     <div>
-      <div id="wheel-container">
+      <div id="wheel-container" onMouseLeave={() => setTracking(false)}>
         <div id={wheelEl}>
           <canvas id="wheel" />
           <canvas id="filter" style={{
