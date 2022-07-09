@@ -92,10 +92,10 @@ img {
   z-index: 3;
   border-radius: 50%;
   -khtml-user-select: none;
-    -o-user-select: none;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    user-select: none;
+  -o-user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 #color-selector {
@@ -111,14 +111,21 @@ img {
   transform-origin: center;
 }
 
-.eyedropper {
+#handle, .eyedropper {
   width: 0;
   height: 0;
   padding: 8px;
   border-radius: 50%;
-  border: 2px solid black;
   position: absolute;
   box-sizing: border-box;
+}
+
+#handle {
+  border: 2px solid black;
+}
+
+.eyedropper {
+  border: 2px solid grey;
 }
 
 .slidecontainer {

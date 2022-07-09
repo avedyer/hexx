@@ -1,68 +1,62 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import domtoimage from 'dom-to-image';
 
-function Wheel() {
+function Wheel(props) {
 
-  const [rgba, setRgba] = useState()
+  console.log(props.quantity)
+
+  const [rgb, setRGB] = useState()
   const [lightness, setLightness] = useState('100%')
-  const [rotation, setRotation] = useState('0deg')
-  const [scale, setScale] = useState('100%');
   const [tracking, setTracking] = useState(false)
 
-  const wheelEl = 'html-wheel', wheelImg = 'wheel-image';
+  const wheelEl = 'html-wheel';
 
-  function getCoords(e, element) {
+  useEffect(() => {
+  }, [rgb])
+
+  function getCoords(e, node) {
       // Returns coordinates of an event within an element.
-      let rect = element.getBoundingClientRect();
+      let rect = node.getBoundingClientRect();
       let eX = e.clientX - rect.left;
       let eY = e.clientY - rect.top;
       return({x: eX, y: eY})
   }
 
-  async function renderImage() {
-    //Loads image element over html color wheel for pixel analysis.
-    domtoimage.toPng(document.getElementById(wheelEl))
-      .then (function (dataUrl) {
-          document.getElementById(wheelImg).src = dataUrl
-      })
-      .catch(function (error) {
-          console.error('oops, something went wrong!', error);
-      });
-  }
+  function getPixelColor(coords, node) {
+    //Sets RGB state value to color of a pixel at event location.
+    domtoimage.toPixelData(node)
+      .then((pixels) => {
+        let rect = node.getBoundingClientRect();
 
-  function getPixelColor(coords, element) {
-    //Sets RGBA state value to color of a pixel at event location.
+        //pixel data was black at right boundary of color circle. this patches it. don't know why.
 
+        let adjX = coords.x + rect.x
+        if (adjX >= node.scrollWidth) {
+          adjX = node.scrollWidth - 1
+          console.log(rgb)
+        }
 
-    let img = element
-    let canvas = document.createElement('canvas');
-
-    canvas.width = img.width;
-    canvas.height = img.height;
-
-    canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
-
-    let pixelData = canvas.getContext('2d').getImageData(coords.x, coords.y, 1, 1).data;
-
-    setRgba(`rgba(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]}, ${pixelData[3] / 255})`)
-    
+        const pixelAtXYOffset = (4 * (coords.y + rect.y) * node.scrollHeight) + (4 * adjX);
+        const pixelData = pixels.slice(pixelAtXYOffset, pixelAtXYOffset + 3);
+        setRGB(`rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`)
+    });    
   }   
 
   function moveDropper(e) {
-    if (!tracking) {
+
+    if (!tracking && e.type !== 'click') {
       return
     }
 
-    e.stopPropagation()
+    const wheelNode = document.getElementById(wheelEl)
 
-    const coords = getCoords(e, document.getElementById(wheelEl));
-    const size = document.getElementById(wheelEl).offsetWidth / 2
+    const coords = getCoords(e, wheelNode);
+    const size = wheelNode.offsetWidth / 2
     const sides =  {x: coords.x - size, y: -coords.y + size};
-    const hypotenuse = Math.sqrt(sides.x**2 + sides.y**2);
+    const hypotenuse = Math.sqrt((sides.x**2) + (sides.y**2));
 
     if (hypotenuse > size) {
-      setTracking(false)
       return
     }
 
@@ -77,13 +71,16 @@ function Wheel() {
 
       sides.x > 0 ? coords.x = coords.x - (ratio * margin / 2) : coords.x = coords.x + (ratio * margin / 2)
       sides.y > 0 ? coords.y = coords.y + ((1 - ratio) * margin / 2) : coords.y = coords.y - ((1 - ratio) * margin / 2);
+
+      coords.x = Math.floor(coords.x);
+      coords.y = Math.floor(coords.y);
     }
 
-    const eyedropper = document.querySelector('.eyedropper')
-    eyedropper.style.top = `${coords.y - 10}px` //10 px adjustment centers mouse within the dropper
-    eyedropper.style.left = `${coords.x - 10}px`
+    getPixelColor({x: coords.x, y: coords.y}, wheelNode)
 
-    getPixelColor(coords, document.getElementById(wheelImg))
+    const handle = document.getElementById('handle')
+    handle.style.top = `${coords.y - 10}px` //10 px adjustment centers mouse within the dropper
+    handle.style.left = `${coords.x - 10}px`
   }
 
 
@@ -96,18 +93,23 @@ function Wheel() {
             backgroundImage: `radial-gradient(hsl(0, 0%, ${lightness}) 0%, transparent 70%)`,
           }}/>
         </div>
-        <img id={wheelImg} onClick={(e) => getPixelColor(e, wheelImg)}/>
-        <div id="color-selector" onMouseDown={() => setTracking(true)} onMouseMove={(e) => moveDropper(e)} onMouseUp={() => setTracking(false)}>
-          <div className="eyedropper" style={{top: '0', left: 'calc(50% - 10px)'}}/>
+        <div id="color-selector" 
+          onMouseDown={() => setTracking(true)} 
+            onMouseMove={(e) => moveDropper(e)} 
+            onMouseUp={() => setTracking(false)}
+            onClick={(e) => moveDropper(e)}
+          >
+          <div id="handle" style={{top: '0', left: 'calc(50% - 10px)'}}/>
+          {Array.from(Array(props.quantity - 1)).map(() => 
+            <div className="eyedropper" style={{top: '0', left: 'calc(50% - 10px)'}}/>
+          )}
         </div>
       </div>
-      <div id="color-display" style={{width: "48px", height: "48px", backgroundColor: rgba}} />
+      <div id="color-display" style={{width: "48px", height: "48px", backgroundColor: rgb}} />
       <div className="slidecontainer">
         <input type="range" 
           defaultValue="100" min="1" max="100" className="slider" id="slider" 
           onChange={(e) => setLightness(`${e.target.value}%`)} //Controls lightness setting of filter
-          onMouseDown={() => document.getElementById(wheelImg).src = ''} //Deletes image when slider is adjusted
-          onMouseUp={renderImage} //Rerenders image when slider adjustment is complete.
         />
       </div>
     </div>
