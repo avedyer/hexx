@@ -112,16 +112,10 @@ function Wheel(props) {
 
     const radAngle = Math.PI * 2 * (props.range * maxRange)
 
-    const ratio = {x: Math.sin(radAngle), y: Math.cos(radAngle)}
-
-    for (let i=0; i>-1; i-=0.25) {
-      const testRad = Math.PI * 2 * (i / (props.quantity - 1))
-      //console.log({x: Math.sin(testRad), y: Math.cos(testRad)}
-    }
-
-    document.querySelectorAll('.eyedropper').forEach((eyedropper) => {
+    document.querySelectorAll('.eyedropper').forEach((eyedropper, index) => {
+      const step = props.quantity - index - 1
+      const ratio = {x: Math.sin(radAngle * step), y: Math.cos(radAngle  * step)}
       const coords = ({x: (hypotenuse * ratio.x) + size, y: Math.abs((hypotenuse * ratio.y) - size)})
-      console.log(coords)
       eyedropper.style.left = `${coords.x}px`
       eyedropper.style.top = `${coords.y}px`
     })
