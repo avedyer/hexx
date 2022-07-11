@@ -22,7 +22,8 @@ function Wheel(props) {
       const wheelNode = document.getElementById(wheelEl);
       if (wheelNode) {
         const size = wheelNode.offsetWidth / 2;
-        setHandleCoords({x: size - 10, y: 0})
+        const x = size - 10, y = 0
+        setHandleCoords({x: x, y: y})
       }
     }
   })
@@ -100,24 +101,43 @@ function Wheel(props) {
     setHandleCoords(coords)
   }
 
-  function rotateDroppers(handleCoords) {
+  function rotateDroppers(coords) {
 
     const wheelNode = document.getElementById(wheelEl)
 
     const size = wheelNode.offsetWidth / 2
-    const sides =  {x: handleCoords.x - size, y: -handleCoords.y + size};
+    const sides =  {x: coords.x - size, y: -coords.y + size};
     const hypotenuse = Math.sqrt((sides.x**2) + (sides.y**2));
 
     const maxRange = props.quantity == 2 ? 1 : 1 / props.quantity
+
+    let radAdjustment
+
+    if (sides.x > 0) {
+      if (sides.y >= 0) {
+        radAdjustment = Math.atan(sides.x / sides.y)
+      }
+      else {
+        radAdjustment = Math.atan(sides.x / sides.y) + Math.PI
+      }
+    }
+    else {
+      if (sides.y >= 0) {
+        radAdjustment = Math.atan(sides.x / sides.y) + 2 * Math.PI
+      }
+      else {
+        radAdjustment = Math.atan(sides.x / sides.y) + Math.PI
+      }
+    }
 
     const radAngle = Math.PI * 2 * (props.range * maxRange)
 
     document.querySelectorAll('.eyedropper').forEach((eyedropper, index) => {
       const step = props.quantity - index - 1
-      const ratio = {x: Math.sin(radAngle * step), y: Math.cos(radAngle  * step)}
-      const coords = ({x: (hypotenuse * ratio.x) + size, y: Math.abs((hypotenuse * ratio.y) - size)})
-      eyedropper.style.left = `${coords.x}px`
-      eyedropper.style.top = `${coords.y}px`
+      const ratio = {x: Math.sin((radAngle * step) + radAdjustment), y: Math.cos((radAngle  * step) + radAdjustment)}
+      const newCoords = ({x: (hypotenuse * ratio.x) + size, y: Math.abs((hypotenuse * ratio.y) - size)})
+      eyedropper.style.left = `${newCoords.x - 10}px`
+      eyedropper.style.top = `${newCoords.y - 10}px`
     })
   }
 
@@ -138,7 +158,7 @@ function Wheel(props) {
           >
           <div id="handle" style={{top: '0', left: 'calc(50% - 10px)'}}/>
           {Array.from(Array(props.quantity - 1)).map(() => 
-            <div className="eyedropper" style={{top: '0', left: 'calc(50% - 10px)'}}/>
+            <div className="eyedropper"/>
           )}
         </div>
       </div>
