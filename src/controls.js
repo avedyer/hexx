@@ -7,7 +7,7 @@ function Controls(props) {
   return (
     <div>
       <input type="range" defaultValue='1' min="1" max = "6" onChange={(e) => props.passQuantity(e.target.value)}/>
-      <input type="range" min="10" max="100" onChange={(e) => props.passRange(e.target.value)}/>
+      <input type="range"  defaultValue="0" min="0" max="1" step='.01' onChange={(e) => props.passRange(e.target.value)}/>
     </div>
   )
 }

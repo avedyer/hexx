@@ -4,16 +4,28 @@ import domtoimage from 'dom-to-image';
 
 function Wheel(props) {
 
-  console.log(props.quantity)
-
   const [rgb, setRGB] = useState()
   const [lightness, setLightness] = useState('100%')
   const [tracking, setTracking] = useState(false)
+  const [handleCoords, setHandleCoords] = useState()
 
   const wheelEl = 'html-wheel';
 
   useEffect(() => {
-  }, [rgb])
+    if (handleCoords) {
+      rotateDroppers(handleCoords)
+    }
+  }, [props.quantity, props.range])
+
+  useEffect(() => {
+    if (!handleCoords) {
+      const wheelNode = document.getElementById(wheelEl);
+      if (wheelNode) {
+        const size = wheelNode.offsetWidth / 2;
+        setHandleCoords({x: size - 10, y: 0})
+      }
+    }
+  })
 
   function getCoords(e, node) {
       // Returns coordinates of an event within an element.
@@ -34,7 +46,6 @@ function Wheel(props) {
         let adjX = coords.x + rect.x
         if (adjX >= node.scrollWidth) {
           adjX = node.scrollWidth - 1
-          console.log(rgb)
         }
 
         const pixelAtXYOffset = (4 * (coords.y + rect.y) * node.scrollHeight) + (4 * adjX);
@@ -43,7 +54,7 @@ function Wheel(props) {
     });    
   }   
 
-  function moveDropper(e) {
+  function moveHandle(e) {
 
     if (!tracking && e.type !== 'click') {
       return
@@ -81,8 +92,40 @@ function Wheel(props) {
     const handle = document.getElementById('handle')
     handle.style.top = `${coords.y - 10}px` //10 px adjustment centers mouse within the dropper
     handle.style.left = `${coords.x - 10}px`
+
+    if (props.quantity > 1) {
+      rotateDroppers(coords)
+    }
+
+    setHandleCoords(coords)
   }
 
+  function rotateDroppers(handleCoords) {
+
+    const wheelNode = document.getElementById(wheelEl)
+
+    const size = wheelNode.offsetWidth / 2
+    const sides =  {x: handleCoords.x - size, y: -handleCoords.y + size};
+    const hypotenuse = Math.sqrt((sides.x**2) + (sides.y**2));
+
+    const maxRange = props.quantity == 2 ? 1 : 1 / props.quantity
+
+    const radAngle = Math.PI * 2 * (props.range * maxRange)
+
+    const ratio = {x: Math.sin(radAngle), y: Math.cos(radAngle)}
+
+    for (let i=0; i>-1; i-=0.25) {
+      const testRad = Math.PI * 2 * (i / (props.quantity - 1))
+      //console.log({x: Math.sin(testRad), y: Math.cos(testRad)}
+    }
+
+    document.querySelectorAll('.eyedropper').forEach((eyedropper) => {
+      const coords = ({x: (hypotenuse * ratio.x) + size, y: Math.abs((hypotenuse * ratio.y) - size)})
+      console.log(coords)
+      eyedropper.style.left = `${coords.x}px`
+      eyedropper.style.top = `${coords.y}px`
+    })
+  }
 
   return (
     <div>
@@ -95,9 +138,9 @@ function Wheel(props) {
         </div>
         <div id="color-selector" 
           onMouseDown={() => setTracking(true)} 
-            onMouseMove={(e) => moveDropper(e)} 
+            onMouseMove={(e) => moveHandle(e)} 
             onMouseUp={() => setTracking(false)}
-            onClick={(e) => moveDropper(e)}
+            onClick={(e) => moveHandle(e)}
           >
           <div id="handle" style={{top: '0', left: 'calc(50% - 10px)'}}/>
           {Array.from(Array(props.quantity - 1)).map(() => 
