@@ -4,7 +4,7 @@ import domtoimage from 'dom-to-image';
 
 function Wheel(props) {
 
-  const [rgb, setRGB] = useState()
+  const [rgb, setRGB] = useState([])
   const [lightness, setLightness] = useState('100%')
   const [tracking, setTracking] = useState(false)
   const [handleCoords, setHandleCoords] = useState()
@@ -15,15 +15,15 @@ function Wheel(props) {
     if (handleCoords) {
       rotateDroppers(handleCoords)
     }
-  }, [props.quantity, props.range])
+  }, [props.quantity, props.range, lightness])
 
   useEffect(() => {
     if (!handleCoords) {
       const wheelNode = document.getElementById(wheelEl);
       if (wheelNode) {
         const size = wheelNode.offsetWidth / 2;
-        const x = size - 10, y = 0
-        setHandleCoords({x: x, y: y})
+        const x = size, y = 0
+        setHandleCoords(boundCoordinates({x: x, y: y}))
       }
     }
   })
@@ -36,22 +36,34 @@ function Wheel(props) {
       return({x: eX, y: eY})
   }
 
-  function getPixelColor(coords, node) {
+  function getPixelColor(coordArray, node) {
     //Sets RGB state value to color of a pixel at event location.
     domtoimage.toPixelData(node)
       .then((pixels) => {
         let rect = node.getBoundingClientRect();
 
-        //pixel data was black at right boundary of color circle. this patches it. don't know why.
+        
+        let newArray = []
 
-        let adjX = coords.x + rect.x
-        if (adjX >= node.scrollWidth) {
-          adjX = node.scrollWidth - 1
-        }
+        coordArray.forEach((coords) => {
 
-        const pixelAtXYOffset = (4 * (coords.y + rect.y) * node.scrollHeight) + (4 * adjX);
-        const pixelData = pixels.slice(pixelAtXYOffset, pixelAtXYOffset + 3);
-        setRGB(`rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`)
+          //pixel data was black at right boundary of color circle. this patches it. don't know why.
+
+          let adjX = coords.x + rect.x
+          if (adjX >= node.scrollWidth) {
+            adjX = node.scrollWidth - 1
+          }
+
+          const pixelAtXYOffset = (4 * (coords.y + rect.y) * node.scrollHeight) + (4 * adjX);
+          const pixelData = pixels.slice(pixelAtXYOffset, pixelAtXYOffset + 3);
+
+          const newRGB = `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`
+
+          newArray.push(newRGB)
+
+        })
+
+        setRGB(newArray)
     });    
   }   
 
@@ -63,32 +75,8 @@ function Wheel(props) {
 
     const wheelNode = document.getElementById(wheelEl)
 
-    const coords = getCoords(e, wheelNode);
-    const size = wheelNode.offsetWidth / 2
-    const sides =  {x: coords.x - size, y: -coords.y + size};
-    const hypotenuse = Math.sqrt((sides.x**2) + (sides.y**2));
-
-    if (hypotenuse > size) {
-      return
-    }
-
-    const margin = hypotenuse + 21 - size // overspill from edge of color wheel, accounting for size of dropper
-
-    if (margin > 0) {
-
-      //Gradually adjust position of dropper to avoid spilling over edge
-
-      const radAngle = Math.abs(Math.atan(sides.x / sides.y))
-      const ratio = radAngle * 2 / Math.PI
-
-      sides.x > 0 ? coords.x = coords.x - (ratio * margin / 2) : coords.x = coords.x + (ratio * margin / 2)
-      sides.y > 0 ? coords.y = coords.y + ((1 - ratio) * margin / 2) : coords.y = coords.y - ((1 - ratio) * margin / 2);
-
-      coords.x = Math.floor(coords.x);
-      coords.y = Math.floor(coords.y);
-    }
-
-    getPixelColor({x: coords.x, y: coords.y}, wheelNode)
+    let coords = getCoords(e, wheelNode);
+    coords = boundCoordinates(coords)
 
     const handle = document.getElementById('handle')
     handle.style.top = `${coords.y - 10}px` //10 px adjustment centers mouse within the dropper
@@ -96,6 +84,10 @@ function Wheel(props) {
 
     if (props.quantity > 1) {
       rotateDroppers(coords)
+    }
+
+    else {
+      getPixelColor([coords], wheelNode)
     }
 
     setHandleCoords(coords)
@@ -132,13 +124,48 @@ function Wheel(props) {
 
     const radAngle = Math.PI * 2 * (props.range * maxRange)
 
+    let coordArray = [coords]
+
     document.querySelectorAll('.eyedropper').forEach((eyedropper, index) => {
       const step = props.quantity - index - 1
       const ratio = {x: Math.sin((radAngle * step) + radAdjustment), y: Math.cos((radAngle  * step) + radAdjustment)}
-      const newCoords = ({x: (hypotenuse * ratio.x) + size, y: Math.abs((hypotenuse * ratio.y) - size)})
+      let newCoords = ({x: Math.floor((hypotenuse * ratio.x) + size), y: Math.floor(Math.abs((hypotenuse * ratio.y) - size))})
+      coordArray.push(newCoords)
       eyedropper.style.left = `${newCoords.x - 10}px`
       eyedropper.style.top = `${newCoords.y - 10}px`
     })
+
+    getPixelColor(coordArray, wheelNode)
+  }
+
+  function boundCoordinates(coords) {
+
+    const wheelNode = document.getElementById(wheelEl)
+    const size = wheelNode.offsetWidth / 2
+    const sides =  {x: coords.x - size, y: -coords.y + size};
+    const hypotenuse = Math.sqrt((sides.x**2) + (sides.y**2));
+
+    if (hypotenuse > size) {
+      return
+    }
+
+    const margin = hypotenuse + 21 - size // overspill from edge of color wheel, accounting for size of dropper
+
+    if (margin > 0) {
+
+      //Gradually adjust position of dropper to avoid spilling over edge
+
+      const radAngle = Math.abs(Math.atan(sides.x / sides.y))
+      const ratio = radAngle * 2 / Math.PI
+
+      sides.x > 0 ? coords.x = coords.x - (ratio * margin / 2) : coords.x = coords.x + (ratio * margin / 2)
+      sides.y > 0 ? coords.y = coords.y + ((1 - ratio) * margin / 2) : coords.y = coords.y - ((1 - ratio) * margin / 2);
+
+      coords.x = Math.floor(coords.x);
+      coords.y = Math.floor(coords.y);
+    }
+
+    return coords
   }
 
   return (
@@ -158,11 +185,15 @@ function Wheel(props) {
           >
           <div id="handle" style={{top: '0', left: 'calc(50% - 10px)'}}/>
           {Array.from(Array(props.quantity - 1)).map(() => 
-            <div className="eyedropper"/>
+            (<div className="eyedropper"/>)
           )}
         </div>
       </div>
-      <div id="color-display" style={{width: "48px", height: "48px", backgroundColor: rgb}} />
+      <div id='pallette'>
+        {Array.from('x'.repeat(props.quantity)).map((item, index) => 
+          <div className="color-display" key={`color${index}`} id={`color${index}`} style={{width: "48px", height: "48px", backgroundColor: rgb[index]}} />
+        )}
+      </div>
       <div className="slidecontainer">
         <input type="range" 
           defaultValue="100" min="1" max="100" className="slider" id="slider" 

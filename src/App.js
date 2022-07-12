@@ -7,7 +7,7 @@ import { useState } from 'react';
 function App() {
 
   const [quantity, setQuantity] = useState(1)
-  const [range, setRange] = useState(0)
+  const [range, setRange] = useState(0.5)
 
   return (
     <div className="App">

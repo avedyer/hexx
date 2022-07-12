@@ -161,3 +161,7 @@ img {
   border: 4px ridge black;
   cursor: pointer; /* Cursor on hover */
 }
+
+#pallette {
+  display: flex;
+}
