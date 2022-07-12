@@ -3,12 +3,6 @@ body {
   padding: 0;
   width: 100vw;
   height: 100vh;
-  background-color: hsla(0, 0%, 0%, 0%);
-}
-
-img {
-  display: inline-block;
-  object-fit: contain;
 }
 
 #root {
@@ -21,31 +15,31 @@ img {
 .App {
   width: 100vw;
   height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #wheel-container {
   position: relative;
-  background-color: transparent;
-  width: 576px;
-  height: 576px;
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
 }
 
-#html-wheel {
+#wheel {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 512px;
-  height: 512px;
+  width: calc(100% - 128px);
+  height: calc(100% - 128px);
 }
 
-#wheel-container canvas {
-}
-
-#wheel {
+#hue {
   margin: auto;
-  width: 512px;
-  height: 512px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   display: inline-block;
   position: absolute;
@@ -53,9 +47,7 @@ img {
   left: 50%;
   transform: translate(-50%, -50%);
   overflow: hidden;
-}
-
-#wheel {
+  box-sizing: content-box;
   background: 
     conic-gradient(
     hsl(360, 100%, 50%),
@@ -68,11 +60,9 @@ img {
     hsl(45, 100%, 50%),
     hsl(0, 100%, 50%)
     );
-    width: 512px;
-    height: 512px;
 }
 
-#filter {
+#shade {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -84,23 +74,9 @@ img {
   height: 100%;
 }
 
-#wheel-image {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 3;
-  border-radius: 50%;
-  -khtml-user-select: none;
-  -o-user-select: none;
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
 #color-selector {
-  width: 512px;
-  height: 512px;
+  width: calc(100% - 128px);
+  height: calc(100% - 128px);
   border-radius: 50%;
   position: absolute;
   top: 50%;
@@ -126,10 +102,6 @@ img {
 
 .eyedropper {
   border: 2px solid grey;
-}
-
-.slidecontainer {
-  width: 512px;
 }
 
 /* The slider itself */
