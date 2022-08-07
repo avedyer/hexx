@@ -21,7 +21,7 @@ body {
 }
 
 #wheel-app {
-  width: 768px;
+  width: 896px;
   height: 704px;
   margin-top: 64px;
   position: relative;
@@ -30,8 +30,7 @@ body {
 #wheel {
   position: absolute;
   top: 0;
-  left: 50%;
-  transform: translate(-50%, -0%);
+  left: 0;
 }
 
 #color-selector {
@@ -40,8 +39,7 @@ body {
   border-radius: 50%;
   position: absolute;
   top: 0;
-  left: 50%;
-  transform: translate(-50%, -0%);
+  left: 0;
   box-sizing: content-box;
   z-index: 4;
   transform-origin: center;
@@ -64,11 +62,22 @@ body {
   border: 2px solid grey;
 }
 
+#pallette {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 224px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
 #slider-container {
   position: absolute;
   bottom: 0;
-  left: 50%;
-  transform: translate(-50%, -0%);
+  left: 0;
 }
 
 /* The slider itself */
@@ -99,8 +108,4 @@ body {
   background: transparent;
   border: 4px ridge black;
   cursor: pointer; /* Cursor on hover */
-}
-
-#pallette {
-  display: flex;
 }

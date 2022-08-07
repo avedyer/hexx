@@ -6,8 +6,13 @@ export default function Wheel(props) {
   const [tracking, setTracking] = useState(false)
   const [handleCoords, setHandleCoords] = useState()
   const [initialized, setInitialized] = useState(false)
+  const [colors, setColors] = useState([])
 
   const radius = 320
+
+  useEffect(() => {
+    console.log(colors)
+  }, [colors])
 
   useEffect(() => {
     if (!initialized) {
@@ -20,7 +25,16 @@ export default function Wheel(props) {
 
   useEffect(() => {
     renderWheel()
+    if (handleCoords) {
+      rotateDroppers(handleCoords)
+    }
   }, [lightness])
+
+  useEffect(() => {
+    if (handleCoords) {
+      rotateDroppers(handleCoords)
+    }
+  }, [props.quantity, props.range])
 
   function renderWheel() {
     let canvas = document.getElementById('wheel')
@@ -137,9 +151,7 @@ export default function Wheel(props) {
 
     const data = pixel.data;
 
-    const rgba = `rgba(${data[0]}, ${data[1]}, ${data[2]})`;
-
-    return rgba;
+    return`rgb(${data[0]}, ${data[1]}, ${data[2]})`;
   }
 
   function moveHandle(e) {
@@ -159,13 +171,15 @@ export default function Wheel(props) {
     handle.style.top = `${coords.y - 10}px` //10px adjustment centers mouse within the dropper
     handle.style.left = `${coords.x - 10}px`
 
+    setHandleCoords(coords)
+
     if (props.quantity > 1) {
       rotateDroppers(coords, e)
     }
 
-    setHandleCoords(coords)
-
-    console.log(getPixelColor(coords))
+    else {
+      setColors([getPixelColor(coords)])
+    }
   }
 
   function rotateDroppers(coords) {
@@ -209,9 +223,14 @@ export default function Wheel(props) {
       let newCoords = ({x: Math.floor((hypotenuse * ratio.x) + radius), y: Math.floor(Math.abs((hypotenuse * ratio.y) - radius))})
       //coordArray = insert(coordArray, 1, boundCoordinates({x: newCoords.x - 10, y: newCoords.y - 10}))
 
+      coordArray.push(newCoords)
+
       eyedropper.style.left = `${newCoords.x - 10}px`
       eyedropper.style.top = `${newCoords.y - 10}px`
     })
+
+    const newColors = coordArray.map(value => getPixelColor(value))
+    setColors(newColors)
   }
 
   return (
@@ -222,6 +241,11 @@ export default function Wheel(props) {
           defaultValue="1" min="0" max="1" step={0.02} className="slider" id="slider" 
           onChange={(e) => setLightness(e.target.value)} //Controls lightness setting of filter
         />
+      </div>
+      <div id='pallette'>
+        {Array.from('x'.repeat(props.quantity)).map((item, index) => 
+          <div className="color-display" key={`color${index}`} id={`color${index}`} style={{width: "48px", height: "48px", backgroundColor: colors[index]}} />
+        )}
       </div>
       <div id="color-selector" 
           onMouseDown={() => setTracking(true)} 
