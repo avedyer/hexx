@@ -265,7 +265,7 @@ export default function Wheel(props) {
 
     const dropperRotation = Math.PI * 2 * (props.range * maxRange) //Baseline rotation for each dropper.
 
-    let coordArray = [coords]
+    let coordArray = []
 
     document.querySelectorAll('.eyedropper').forEach((eyedropper, index) => {
       const step = props.quantity - index - 1
@@ -282,6 +282,8 @@ export default function Wheel(props) {
       eyedropper.style.left = `${newCoords.x - 10}px`
       eyedropper.style.top = `${newCoords.y - 10}px`
     })
+
+    coordArray.push(coords)
 
     const newColors = coordArray.map(value => getPixelColor(value))
     setColors(newColors)

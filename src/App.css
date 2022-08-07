@@ -68,6 +68,7 @@ body {
   top: 64px;
   width: 224px;
   height: 80%;
+  padding: 8px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -85,7 +86,7 @@ body {
   height: 100%;
 }
 
-.swatch-container:hover .label {
+#pallette:hover .label {
   visibility: visible;
 }
 
