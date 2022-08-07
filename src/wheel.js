@@ -1,76 +1,146 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 
-import domtoimage from 'dom-to-image';
+export default function Wheel(props) {
 
-function Wheel(props) {
-
-  const [rgb, setRGB] = useState([])
-  const [lightness, setLightness] = useState('100%')
+  const [lightness ,setLightness] = useState(1)
   const [tracking, setTracking] = useState(false)
   const [handleCoords, setHandleCoords] = useState()
+  const [initialized, setInitialized] = useState(false)
 
-  const wheelEl = 'wheel';
-  const containerSize = 384
   const radius = 320
 
   useEffect(() => {
-    //Adjust droppers when settings are changed outside of handle movement
-    if (handleCoords) {
-      rotateDroppers(handleCoords)
-    }
-  }, [props.quantity, props.range, lightness])
-
-
-  useEffect(() => {
-    //Sets default handle coordinates for proper rendering of new droppers.
-    if (!handleCoords) {
-      const wheelNode = document.getElementById(wheelEl);
-      if (wheelNode) {
-        const x = radius, y = 0
-        setHandleCoords(boundCoordinates({x: x, y: y}))
+    if (!initialized) {
+      if (document.getElementById('wheel')) {
+        renderWheel()
+        setInitialized(true)
       }
     }
   })
 
-  function getCoords(e, node) {
-      // Returns coordinates of an event within an element.
-      let rect = node.getBoundingClientRect();
-      let eX = e.clientX - rect.left;
-      let eY = e.clientY - rect.top;
-      return({x: eX, y: eY})
+  useEffect(() => {
+    renderWheel()
+  }, [lightness])
+
+  function renderWheel() {
+    let canvas = document.getElementById('wheel')
+    let ctx = canvas.getContext("2d");
+    let image = ctx.createImageData(2*radius, 2*radius);
+    let data = image.data;
+
+    for (let x = -radius; x < radius; x++) {
+      for (let y = -radius; y < radius; y++) {
+
+        let distance = Math.sqrt(x*x + y*y);
+        
+        if (distance > radius) {
+          // skip all (x,y) coordinates that are outside of the circle
+          continue;
+        }
+
+        let radian = Math.atan2(y, x);
+        let degree = radianToDegree(radian)
+
+        let saturation = distance / radius
+        let value = 1 - ((1 - lightness) * (1 - saturation))
+        
+        const [r, g, b] = HSVtoRGB(degree, saturation, value)
+
+        // Figure out the starting index of this pixel in the image data array.
+        let rowLength = 2*radius;
+        let adjustedX = x + radius; // convert x from [-50, 50] to [0, 100] (the coordinates of the image data array)
+        let adjustedY = y + radius; // convert y from [-50, 50] to [0, 100] (the coordinates of the image data array)
+        let pixelWidth = 4; // each pixel requires 4 slots in the data array
+        let index = (adjustedX + (adjustedY * rowLength)) * pixelWidth;
+        data[index] = r;
+        data[index+1] = g;
+        data[index+2] = b;
+        data[index+3] = 255;
+      }
+    }
+
+    ctx.putImageData(image, 0, 0);
   }
 
-  function getPixelColor(coordArray, node) {
+  function radianToDegree(rad) {
+    return ((rad + Math.PI) / (2 * Math.PI)) * 360;
+  }
 
-    //Sets RGB state value based on array of coordinates
+  function HSVtoRGB(hue, saturation, value) {
+    let chroma = value * saturation;
+    let hue1 = hue / 60;
+    let x = chroma * (1- Math.abs((hue1 % 2) - 1));
+    let r1, g1, b1;
+    if (hue1 >= 0 && hue1 <= 1) {
+      ([r1, g1, b1] = [chroma, x, 0]);
+    } else if (hue1 >= 1 && hue1 <= 2) {
+      ([r1, g1, b1] = [x, chroma, 0]);
+    } else if (hue1 >= 2 && hue1 <= 3) {
+      ([r1, g1, b1] = [0, chroma, x]);
+    } else if (hue1 >= 3 && hue1 <= 4) {
+      ([r1, g1, b1] = [0, x, chroma]);
+    } else if (hue1 >= 4 && hue1 <= 5) {
+      ([r1, g1, b1] = [x, 0, chroma]);
+    } else if (hue1 >= 5 && hue1 <= 6) {
+      ([r1, g1, b1] = [chroma, 0, x]);
+    }
+    
+    let m = value - chroma;
+    let [r,g,b] = [r1+m, g1+m, b1+m];
+    
+    // Change r,g,b values from [0,1] to [0,255]
+    return [255*r,255*g,255*b];
+  }
 
-    domtoimage.toPixelData(node)
-      .then((pixels) => {
+  function getCoords(e, node) {
+    // Returns coordinates of an event within an element.
+    let rect = node.getBoundingClientRect();
+    let eX = e.clientX - rect.left;
+    let eY = e.clientY - rect.top;
+    return({x: eX, y: eY})
+  } 
 
-        let rect = node.getBoundingClientRect();
+  function boundCoordinates(coords) {
 
-        let newArray = []
+    //Adjusts coordinate values to account for size of dropper element, and ensure it is not rendered outside bounds of wheel.
 
-        coordArray.forEach((coords) => {
+    const sides =  {x: coords.x - radius, y: -coords.y + radius};
+    const hypotenuse = Math.sqrt((sides.x**2) + (sides.y**2));
 
-          coords.x -= radius;
-          
-          if (coords.x > 241) {
-            coords.x = 241
-          }
+    if (hypotenuse > radius) {
+      return
+    }
 
-          const pixelAtXYOffset = (4 * (coords.y + rect.y) * node.scrollHeight) + (4 * (coords.x + rect.x));
-          const pixelData = pixels.slice(pixelAtXYOffset, pixelAtXYOffset + 3);
+    const margin = hypotenuse + 21 - radius //Overspill from edge of color wheel. Dropper radius of 10 is implied but is actually defined in CSS.
 
-          const newRGB = `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`
+    if (margin > 0) {
 
-          newArray.push(newRGB)
+      //Gradually adjust position of dropper
 
-        })
+      const radAngle = Math.abs(Math.atan(sides.x / sides.y))
+      const ratio = radAngle * 2 / Math.PI
 
-        setRGB(newArray)
-    });    
-  }   
+      sides.x > 0 ? coords.x = coords.x - (ratio * margin / 2) : coords.x = coords.x + (ratio * margin / 2)
+      sides.y > 0 ? coords.y = coords.y + ((1 - ratio) * margin / 2) : coords.y = coords.y - ((1 - ratio) * margin / 2);
+
+      coords.x = Math.floor(coords.x);
+      coords.y = Math.floor(coords.y);
+    }
+
+    return coords
+  }
+
+  function getPixelColor(coords) {
+    let canvas = document.getElementById('wheel')
+    let ctx = canvas.getContext("2d");
+    const pixel = ctx.getImageData(coords.x, coords.y, 1, 1);
+
+    const data = pixel.data;
+
+    const rgba = `rgba(${data[0]}, ${data[1]}, ${data[2]})`;
+
+    return rgba;
+  }
 
   function moveHandle(e) {
 
@@ -80,7 +150,7 @@ function Wheel(props) {
       return
     }
 
-    const wheelNode = document.getElementById(wheelEl)
+    const wheelNode = document.getElementById('wheel')
 
     let coords = getCoords(e, wheelNode);
     coords = boundCoordinates(coords)
@@ -90,19 +160,17 @@ function Wheel(props) {
     handle.style.left = `${coords.x - 10}px`
 
     if (props.quantity > 1) {
-      rotateDroppers(coords)
-    }
-
-    else {
-      getPixelColor([{x: coords.x - 10, y: coords.y - 10}], wheelNode)
+      rotateDroppers(coords, e)
     }
 
     setHandleCoords(coords)
+
+    console.log(getPixelColor(coords))
   }
 
   function rotateDroppers(coords) {
 
-    const wheelNode = document.getElementById(wheelEl)
+    const wheelNode = document.getElementById('wheel')
     const sides =  {x: coords.x - radius, y: -coords.y + radius};
     const hypotenuse = Math.sqrt((sides.x**2) + (sides.y**2));
 
@@ -139,64 +207,23 @@ function Wheel(props) {
 
       //Rouding coordinate value is necessary for finding pixel color.
       let newCoords = ({x: Math.floor((hypotenuse * ratio.x) + radius), y: Math.floor(Math.abs((hypotenuse * ratio.y) - radius))})
-      coordArray = insert(coordArray, 1, {x: newCoords.x - 10, y: newCoords.y - 10})
+      //coordArray = insert(coordArray, 1, boundCoordinates({x: newCoords.x - 10, y: newCoords.y - 10}))
 
       eyedropper.style.left = `${newCoords.x - 10}px`
       eyedropper.style.top = `${newCoords.y - 10}px`
     })
-
-    getPixelColor(coordArray, wheelNode)
   }
-
-  function boundCoordinates(coords) {
-
-    //Adjusts coordinate values to account for size of dropper element, and ensure it is not rendered outside bounds of wheel.
-
-    const sides =  {x: coords.x - radius, y: -coords.y + radius};
-    const hypotenuse = Math.sqrt((sides.x**2) + (sides.y**2));
-
-    if (hypotenuse > radius) {
-      return
-    }
-
-    const margin = hypotenuse + 21 - radius //Overspill from edge of color wheel. Dropper radius of 10 is implied but is actually defined in CSS.
-
-    if (margin > 0) {
-
-      //Gradually adjust position of dropper
-
-      const radAngle = Math.abs(Math.atan(sides.x / sides.y))
-      const ratio = radAngle * 2 / Math.PI
-
-      sides.x > 0 ? coords.x = coords.x - (ratio * margin / 2) : coords.x = coords.x + (ratio * margin / 2)
-      sides.y > 0 ? coords.y = coords.y + ((1 - ratio) * margin / 2) : coords.y = coords.y - ((1 - ratio) * margin / 2);
-
-      coords.x = Math.floor(coords.x);
-      coords.y = Math.floor(coords.y);
-    }
-
-    return coords
-  }
-
-  const insert = (arr, index, ...newItems) => [
-    // part of the array before the specified index
-    ...arr.slice(0, index),
-    // inserted items
-    ...newItems,
-    // part of the array after the specified index
-    ...arr.slice(index)
-  ]
 
   return (
     <div id='wheel-app'>
-      <div id="wheel-container" style={{width: `${containerSize * 2}px`, height: `${containerSize * 2}px`}} onMouseLeave={() => setTracking(false)}>
-        <div id={wheelEl}>
-          <canvas id="hue" />
-          <canvas id="shade" style={{
-            backgroundImage: `radial-gradient(hsl(0, 0%, ${lightness}) 0%, transparent 70%)`,
-          }}/>
-        </div>
-        <div id="color-selector" 
+      <canvas id='wheel' width={radius * 2} height={radius * 2}/>
+      <div id="slider-container" style={{width: `${radius * 2}px`}}>
+        <input type="range" 
+          defaultValue="1" min="0" max="1" step={0.02} className="slider" id="slider" 
+          onChange={(e) => setLightness(e.target.value)} //Controls lightness setting of filter
+        />
+      </div>
+      <div id="color-selector" 
           onMouseDown={() => setTracking(true)} 
             onMouseMove={(e) => moveHandle(e)} 
             onMouseUp={() => setTracking(false)}  //Tracking state keeps handle from being sticky.
@@ -207,20 +234,6 @@ function Wheel(props) {
             (<div className="eyedropper"/>)
           )}
         </div>
-      </div>
-      <div id='pallette'>
-        {Array.from('x'.repeat(props.quantity)).map((item, index) => 
-          <div className="color-display" key={`color${index}`} id={`color${index}`} style={{width: "48px", height: "48px", backgroundColor: rgb[index]}} />
-        )}
-      </div>
-      <div className="slidecontainer" style={{width: `${radius * 2}px`}}>
-        <input type="range" 
-          defaultValue="100" min="1" max="100" className="slider" id="slider" 
-          onChange={(e) => setLightness(`${e.target.value}%`)} //Controls lightness setting of filter
-        />
-      </div>
     </div>
   )
 }
-
-export default Wheel
