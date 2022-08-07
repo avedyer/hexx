@@ -21,7 +21,7 @@ body {
 }
 
 #wheel-app {
-  width: 896px;
+  width: 1024px;
   height: 704px;
   margin-top: 64px;
   position: relative;
@@ -65,13 +65,41 @@ body {
 #pallette {
   position: absolute;
   right: 0;
-  top: 0;
+  top: 64px;
   width: 224px;
-  height: 100%;
+  height: 80%;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
+}
+
+.swatch-container {
+  height: 64px;
+  width: 100%;
+  position: relative;
+}
+
+.swatch {
+  width: 100%;
+  height: 100%;
+}
+
+.swatch-container:hover .label {
+  visibility: visible;
+}
+
+.swatch-container .label {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  visibility: hidden;
+}
+
+#model-selector {
+  position: absolute;
+  bottom: 0;
+  right: 0;
 }
 
 #slider-container {

@@ -7,12 +7,10 @@ export default function Wheel(props) {
   const [handleCoords, setHandleCoords] = useState()
   const [initialized, setInitialized] = useState(false)
   const [colors, setColors] = useState([])
+  const [colorLabels, setColorLabels] = useState([])
+  const [model, setModel] = useState('hsl')
 
   const radius = 320
-
-  useEffect(() => {
-    console.log(colors)
-  }, [colors])
 
   useEffect(() => {
     if (!initialized) {
@@ -35,6 +33,36 @@ export default function Wheel(props) {
       rotateDroppers(handleCoords)
     }
   }, [props.quantity, props.range])
+
+  useEffect(() => {
+    if(model !== 'rgb') {
+      //convert RGB string to array of values
+      let rgbArray = colors.map((color) => {
+        return color.substring(4, color.length-1)
+        .replace(/ /g, '')
+        .split(',');
+      })
+
+      //convert each value from string to integer
+      rgbArray.forEach((set, index) => {
+        set.forEach((value, index) => {
+          set[index] = parseInt(value)
+        })
+        rgbArray[index] = [...set]
+      })
+      
+      if (model === 'hex') {
+        setColorLabels(rgbArray.map((set) => RGBtoHEX(set[0], set[1], set[2])))
+      }
+
+      else {
+        setColorLabels(rgbArray.map((set) => RGBtoHSL(set[0], set[1], set[2])))
+      }
+    }
+    else {
+      setColorLabels([...colors])
+    }
+  }, [colors])
 
   function renderWheel() {
     let canvas = document.getElementById('wheel')
@@ -105,6 +133,32 @@ export default function Wheel(props) {
     // Change r,g,b values from [0,1] to [0,255]
     return [255*r,255*g,255*b];
   }
+
+  function RGBtoHEX(r, g, b) {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+
+  function RGBtoHSL(r, g, b) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    const l = Math.max(r, g, b);
+    const s = l - Math.min(r, g, b);
+    const h = s
+      ? l === r
+        ? (g - b) / s
+        : l === g
+        ? 2 + (b - r) / s
+        : 4 + (r - g) / s
+      : 0;
+    const arr = [
+      Math.round(60 * h < 0 ? 60 * h + 360 : 60 * h),
+      Math.round(100 * (s ? (l <= 0.5 ? s / (2 * l - s) : s / (2 - (2 * l - s))) : 0)),
+      Math.round((100 * (2 * l - s)) / 2)
+    ];
+
+    return `hsl(${arr[0]}, ${arr[1]}, ${arr[2]})`
+  };
 
   function getCoords(e, node) {
     // Returns coordinates of an event within an element.
@@ -243,9 +297,17 @@ export default function Wheel(props) {
         />
       </div>
       <div id='pallette'>
-        {Array.from('x'.repeat(props.quantity)).map((item, index) => 
-          <div className="color-display" key={`color${index}`} id={`color${index}`} style={{width: "48px", height: "48px", backgroundColor: colors[index]}} />
+        {Array.from(  'x'.repeat(props.quantity)).map((item, index) => 
+          <div className="swatch-container">
+            <div className="swatch" key={`color${index}`} id={`color${index}`} style={{backgroundColor: colors[index]}} />
+            <span className="label">{colorLabels[index]}</span>
+          </div>
         )}
+      </div>
+      <div id='model-selector'>
+        <span onClick={() => setModel('hex')}>HEX</span>
+        <span onClick={() => setModel('rgb')}>RGB</span>
+        <span onClick={() => setModel('hsl')}>HSL</span>
       </div>
       <div id="color-selector" 
           onMouseDown={() => setTracking(true)} 
