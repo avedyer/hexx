@@ -320,7 +320,7 @@ export default function Wheel(props) {
         <div id='wheel-settings' style={{width: `${radius * 2}px`}}>
           <div id="lightness-slider">
             <input type="range" 
-              defaultValue="1" min="0" max="1" step={0.02} className="slider" id="slider" 
+              defaultValue="1" min="0" max="1" step={0.02}
               onChange={(e) => setLightness(e.target.value)} //Controls lightness setting of filter
             />
           </div>
