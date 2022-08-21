@@ -9,12 +9,13 @@ export default function Wheel(props) {
   const [colors, setColors] = useState([])
   const [colorLabels, setColorLabels] = useState([])
   const [model, setModel] = useState('hsl')
-
-  const radius = 320
+  const [quantity, setQuantity] = useState(1);
+  const [range, setRange] = useState(0.5);
+  const [radius, setRadius] = useState()
 
   useEffect(() => {
     if (!initialized) {
-      if (document.getElementById('wheel')) {
+      if (document.getElementById('wheel') && radius) {
         renderWheel()
         setInitialized(true)
       }
@@ -22,7 +23,16 @@ export default function Wheel(props) {
   })
 
   useEffect(() => {
-    renderWheel()
+    if (!radius && document.getElementById('controls')) {
+      const smallSide = Math.min(document.getElementById('controls').offsetHeight, document.getElementById('controls').offsetWidth)
+      setRadius(Math.floor(smallSide / 2) - 48)
+    }
+  })
+
+  useEffect(() => {
+    if (initialized) {
+      renderWheel()
+    }
     if (handleCoords) {
       rotateDroppers(handleCoords)
     }
@@ -32,7 +42,7 @@ export default function Wheel(props) {
     if (handleCoords) {
       rotateDroppers(handleCoords)
     }
-  }, [props.quantity, props.range])
+  }, [quantity, range])
 
   useEffect(() => {
     if(model !== 'rgb') {
@@ -62,7 +72,7 @@ export default function Wheel(props) {
     else {
       setColorLabels([...colors])
     }
-  }, [colors])
+  }, [colors, model])
 
   function renderWheel() {
     let canvas = document.getElementById('wheel')
@@ -227,7 +237,7 @@ export default function Wheel(props) {
 
     setHandleCoords(coords)
 
-    if (props.quantity > 1) {
+    if (quantity > 1) {
       rotateDroppers(coords, e)
     }
 
@@ -242,7 +252,7 @@ export default function Wheel(props) {
     const sides =  {x: coords.x - radius, y: -coords.y + radius};
     const hypotenuse = Math.sqrt((sides.x**2) + (sides.y**2));
 
-    const maxRange = props.quantity == 2 ? 1 : 1 / props.quantity  //Maximum fraction of the circle around which the dropper can rotate. One dropper can rotate freely.
+    const maxRange = quantity == 2 ? 1 : 1 / quantity  //Maximum fraction of the circle around which the dropper can rotate. One dropper can rotate freely.
 
     let handleRotation  //Degree of rotation of handle. Applied as adjustment to each dropper.
 
@@ -263,12 +273,12 @@ export default function Wheel(props) {
       }
     }
 
-    const dropperRotation = Math.PI * 2 * (props.range * maxRange) //Baseline rotation for each dropper.
+    const dropperRotation = Math.PI * 2 * (range * maxRange) //Baseline rotation for each dropper.
 
     let coordArray = []
 
     document.querySelectorAll('.eyedropper').forEach((eyedropper, index) => {
-      const step = props.quantity - index - 1
+      const step = quantity - index - 1
 
       //Ratio based on angle of rotation, multiplied with hypotenuse to find x and y coordincates 
       const ratio = {x: Math.sin((dropperRotation * step) + handleRotation), y: Math.cos((dropperRotation  * step) + handleRotation)} 
@@ -291,37 +301,50 @@ export default function Wheel(props) {
 
   return (
     <div id='wheel-app'>
-      <canvas id='wheel' width={radius * 2} height={radius * 2}/>
-      <div id="slider-container" style={{width: `${radius * 2}px`}}>
-        <input type="range" 
-          defaultValue="1" min="0" max="1" step={0.02} className="slider" id="slider" 
-          onChange={(e) => setLightness(e.target.value)} //Controls lightness setting of filter
-        />
-      </div>
-      <div id='pallette'>
-        {Array.from(  'x'.repeat(props.quantity)).map((item, index) => 
-          <div className="swatch-container">
-            <div className="swatch" key={`color${index}`} id={`color${index}`} style={{backgroundColor: colors[index]}} />
-            <span className="label">{colorLabels[index]}</span>
+      <div id='controls'>
+        <div id='wheel-container' style={{width: `${radius * 2}px`, height: `${radius * 2}px`}}>
+          <canvas id='wheel' width={radius * 2} height={radius * 2}/>
+          <div id="color-selector" 
+            style={{width: `${radius * 2}px`, height: `${radius * 2}px`}}
+            onMouseDown={() => setTracking(true)} 
+              onMouseMove={(e) => moveHandle(e)} 
+              onMouseUp={() => setTracking(false)}  //Tracking state keeps handle from being sticky.
+              onClick={(e) => moveHandle(e)}
+            >
+            <div id="handle" style={{top: '0', left: 'calc(50% - 10px)'}}/>
+            {Array.from(Array(quantity - 1)).map(() => 
+              (<div className="eyedropper"/>)
+            )}
           </div>
-        )}
+        </div>
+        <div id='wheel-settings' style={{width: `${radius * 2}px`}}>
+          <div id="lightness-slider">
+            <input type="range" 
+              defaultValue="1" min="0" max="1" step={0.02} className="slider" id="slider" 
+              onChange={(e) => setLightness(e.target.value)} //Controls lightness setting of filter
+            />
+          </div>
+          <div id='dropper-settings'>
+            <input type="range" defaultValue='1' min="1" max = "6" onChange={(e) => setQuantity(e.target.value)}/>
+            <input type="range"  defaultValue="0.5" min="0" max="1" step='.01' onChange={(e) => setRange(e.target.value)}/>
+          </div>
+        </div>
       </div>
-      <div id='model-selector'>
-        <span onClick={() => setModel('hex')}>HEX</span>
-        <span onClick={() => setModel('rgb')}>RGB</span>
-        <span onClick={() => setModel('hsl')}>HSL</span>
-      </div>
-      <div id="color-selector" 
-          onMouseDown={() => setTracking(true)} 
-            onMouseMove={(e) => moveHandle(e)} 
-            onMouseUp={() => setTracking(false)}  //Tracking state keeps handle from being sticky.
-            onClick={(e) => moveHandle(e)}
-          >
-          <div id="handle" style={{top: '0', left: 'calc(50% - 10px)'}}/>
-          {Array.from(Array(props.quantity - 1)).map(() => 
-            (<div className="eyedropper"/>)
+      <div id='color-info'>
+        <div id='pallette' style={{height: `${radius * 2}px`}}>
+          {Array.from(  'x'.repeat(quantity)).map((item, index) => 
+            <div className="swatch-container">
+              <div className="swatch" key={`color${index}`} id={`color${index}`} style={{backgroundColor: colors[index]}} />
+              <span className="label">{colorLabels[index]}</span>
+            </div>
           )}
         </div>
+        <div id='model-selector'>
+          <span onClick={() => setModel('hex')}>HEX</span>
+          <span onClick={() => setModel('rgb')}>RGB</span>
+          <span onClick={() => setModel('hsl')}>HSL</span>
+        </div>
+      </div>
     </div>
   )
 }

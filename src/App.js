@@ -12,7 +12,6 @@ function App() {
   return (
     <div className="App">
       <Wheel quantity={quantity} range={range}/>
-      <Controls passQuantity={setQuantity} passRange={setRange}/>
     </div>
   );
 }
