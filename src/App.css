@@ -16,6 +16,18 @@ a:hover {
   text-decoration: underline;
 }
 
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 0;
+}
+
+input[type=range]::-webkit-slider-thumb, input[type=range]::-moz-range-thumb {
+  -webkit-appearance: none;
+  border-radius: 0;
+  height: 100%;
+}
+
 #root {
   margin: 0;
   padding: 0;
@@ -26,196 +38,178 @@ a:hover {
 .App {
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
   background-color: hsl(0, 0%, 60%);
+}
+
+.options {
+  background-color: hsl(0, 0%, 40%);
+  margin-top: 12px;
 }
 
 #wheel-app {
   position: relative;
-  height: calc(100vh - 64px);
+  height: calc(100vh - 48px);
   display: flex;
   align-items: center;
 }
 
-#controls {
-  box-sizing: border-box;
-  height: inherit;
-  min-width: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 16px;
-}
+  #controls {
+    box-sizing: border-box;
+    height: inherit;
+    min-width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 16px;
+  }
 
-#wheel {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
+    #wheel-container {
+      position: relative;
+    }
 
-#wheel-container {
-  position: relative;
-}
+      #wheel, #color-selector {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
 
-#color-selector {
-  border-radius: 50%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  box-sizing: content-box;
-  z-index: 4;
-  transform-origin: center;
-}
+        #handle, .eyedropper {
+          width: 0;
+          height: 0;
+          padding: 8px;
+          border-radius: 50%;
+          position: absolute;
+          box-sizing: border-box;
+        }
+        
+        #handle {
+          border: 2px solid black;
+        }
+        
+        .eyedropper {
+          border: 2px solid hsl(0, 0%, 40%);
+        }
 
-#wheel-settings {
-  height: 64px;
-  background-color: hsl(0, 0%, 40%);
-  margin-top: 8px;
-  padding-top: 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
+    #wheel-settings {
+      height: 64px;
+      padding-top: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    
+      #dropper-settings {
+        width: 80%;
+        display: flex;
+      }
+      
+      #dropper-settings > * {
+        flex-grow: 1;
+      }
+    
+        .slider-container {
+          display: flex;
+          flex-direction: column;
+          text-align: center;
+          color: white;
+        }
 
-#dropper-settings {
-  width: 80%;
-  display: flex;
-}
+      #lightness-slider {
+        width: 80%;
+      }
+      
+        #lightness-slider > input[type="range"] {
+          width: 100%;
+          height: 16px;
+          width: 100%;
+          background: linear-gradient(to right, black, white);
+          -webkit-transition: .2s;
+          transition: opacity .2s;
+        }
 
-#dropper-settings > * {
-  flex-grow: 1;
-}
+  #color-info {
+    min-width: 30%;
+    flex-grow: 2;
+    height: 100%;
+  }
 
-.slider-container {
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  color: white;
-}
-  
-#handle, .eyedropper {
-  width: 0;
-  height: 0;
-  padding: 8px;
-  border-radius: 50%;
-  position: absolute;
-  box-sizing: border-box;
-}
+    #pallette {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+    }
 
-#handle {
-  border: 2px solid black;
-}
+      .swatch-container {
+        height: calc(100% / 6);
+        width: 100%;
+        position: relative;
+      }
 
-.eyedropper {
-  border: 2px solid grey;
-}
+        .swatch {
+          width: 100%;
+          height: 100%;
+        }
 
-#color-info {
-  min-width: 30%;
-  flex-grow: 2;
-  height: 100%;
-}
+        .label {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          padding: 0 8px;
+          width: 100%;
+          text-align: center;
+          font-size: 16px;
+          visibility: hidden;
+        }
 
-#pallette {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-}
+        #pallette:hover .label {
+          visibility: visible;
+          color: black;
+          background-color: white;
+        }
 
-.swatch-container {
-  height: calc(100% / 6);
-  width: 100%;
-  position: relative;
-}
+    #model-selector {
+      height: 80px;
+      width: 80%;
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+    }
 
-.swatch {
-  width: 100%;
-  height: 100%;
-}
+      #model-selector > span {
+        height: 1em;
+        padding: 10px;
+        font-size: 24px;
+        background-color: white;
+      }
 
-#pallette:hover .label {
-  visibility: visible;
-  color: black;
-  background-color: white;
-}
+      #model-selector > span:hover {
+        cursor: pointer;
+        text-decoration: underline;
+      }
 
-.swatch-container .label {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  padding: 0 8px;
-  width: 100%;
-  text-align: center;
-  font-size: 16px;
-  visibility: hidden;
-}
-
-#model-selector {
-  height: 80px;
-  width: 80%;
-  margin: 8px auto;
-  background-color: hsl(0, 0%, 40%);
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-}
-
-#model-selector > span {
-  height: 1em;
-  padding: 10px;
-  font-size: 24px;
-  background-color: white;
-}
-
-#model-selector > span:hover {
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-#model-selector > span.selected {
-  text-decoration: underline;
-}
-
-input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  padding: 0;
-}
-
-#lightness-slider {
-  width: 80%;
-}
-
-#lightness-slider > input[type="range"] {
-  width: 100%;
-  height: 16px;
-  width: 100%;
-  background: linear-gradient(to right, black, white);
-  -webkit-transition: .2s;
-  transition: opacity .2s;
-}
-
-input[type=range]::-webkit-slider-thumb, input[type=range]::-moz-range-thumb {
-  -webkit-appearance: none;
-  border-radius: 0;
-  height: 100%;
-}
+      #model-selector > span.selected {
+        text-decoration: underline;
+      }
 
 footer {
   font-size: 20px;
   text-align: center;
 }
 
-#ghLogo {
-  width: 20px;
-  height: 20px;
-}
+  #ghLogo {
+    width: 1em;
+    height: 1em;
+  }
 
-#ghLogo {
-  transition: transform 0.7s;
-}
+  #ghLogo {
+    transition: transform 0.6s;
+  }
 
-footer span:hover #ghLogo {
-  transform: rotate(360deg);
-}
+  footer span:hover #ghLogo {
+    transform: rotate(360deg);
+  }

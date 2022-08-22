@@ -328,7 +328,7 @@ export default function Wheel(props) {
             )}
           </div>
         </div>
-        <div id='wheel-settings' style={{width: `${radius * 2}px`}}>
+        <div id='wheel-settings' className='options' style={{width: `${radius * 2}px`}}>
           <div id="lightness-slider">
             <input type="range" 
               defaultValue="1" min="0" max="1" step={0.02}
@@ -356,7 +356,7 @@ export default function Wheel(props) {
             </div>
           )}
         </div>
-        <div id='model-selector'>
+        <div id='model-selector' className='options'>
           <span className={model === 'hex' ? 'selected' : ''} onClick={() => setModel('hex')}>HEX</span>
           <span className={model === 'rgb' ? 'selected' : ''} onClick={() => setModel('rgb')}>RGB</span>
           <span className={model === 'hsl' ? 'selected' : ''} onClick={() => setModel('hsl')}>HSL</span>
