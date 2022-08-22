@@ -12,20 +12,29 @@ export default function Wheel(props) {
   const [quantity, setQuantity] = useState(1);
   const [range, setRange] = useState(0.5);
   const [radius, setRadius] = useState()
+  const [rendered, setRendered] = useState(false)
 
   useEffect(() => {
     if (!initialized) {
       if (document.getElementById('wheel') && radius) {
         renderWheel()
         setInitialized(true)
+        setHandleCoords({x: radius, y: 10})
       }
+    }
+    if (colors.length === 0 && rendered) {
+      setColors([getPixelColor(handleCoords)])
     }
   })
 
   useEffect(() => {
+    console.log(handleCoords)
+  }, [handleCoords])
+
+  useEffect(() => {
     if (!radius && document.getElementById('controls')) {
       const smallSide = Math.min(document.getElementById('controls').offsetHeight, document.getElementById('controls').offsetWidth)
-      setRadius(Math.floor(smallSide / 2) - 48)
+      setRadius(Math.floor(smallSide / 2) - 80)
     }
   })
 
@@ -112,6 +121,8 @@ export default function Wheel(props) {
     }
 
     ctx.putImageData(image, 0, 0);
+
+    setRendered(true)
   }
 
   function radianToDegree(rad) {
@@ -325,13 +336,19 @@ export default function Wheel(props) {
             />
           </div>
           <div id='dropper-settings'>
-            <input type="range" defaultValue='1' min="1" max = "6" onChange={(e) => setQuantity(e.target.value)}/>
-            <input type="range"  defaultValue="0.5" min="0" max="1" step='.01' onChange={(e) => setRange(e.target.value)}/>
+            <div className="slider-container">
+              <input id='quantity-selector' type="range" defaultValue='1' min="1" max = "6" onChange={(e) => setQuantity(e.target.value)}/>
+              <label for='quantity-selector'>Pallette Size</label>
+            </div>
+            <div className="slider-container">
+              <input id='range-selector' type="range"  defaultValue="0.5" min="0" max="1" step='.01' onChange={(e) => setRange(e.target.value)}/>
+              <label for='range-selector'>Spread</label>
+            </div>
           </div>
         </div>
       </div>
       <div id='color-info'>
-        <div id='pallette' style={{height: `${radius * 2}px`}}>
+        <div id='pallette' style={{height: `${(radius * 2) + 16}px`}}>
           {Array.from(  'x'.repeat(quantity)).map((item, index) => 
             <div className="swatch-container">
               <div className="swatch" key={`color${index}`} id={`color${index}`} style={{backgroundColor: colors[index]}} />
@@ -340,9 +357,9 @@ export default function Wheel(props) {
           )}
         </div>
         <div id='model-selector'>
-          <span onClick={() => setModel('hex')}>HEX</span>
-          <span onClick={() => setModel('rgb')}>RGB</span>
-          <span onClick={() => setModel('hsl')}>HSL</span>
+          <span className={model === 'hex' ? 'selected' : ''} onClick={() => setModel('hex')}>HEX</span>
+          <span className={model === 'rgb' ? 'selected' : ''} onClick={() => setModel('rgb')}>RGB</span>
+          <span className={model === 'hsl' ? 'selected' : ''} onClick={() => setModel('hsl')}>HSL</span>
         </div>
       </div>
     </div>
