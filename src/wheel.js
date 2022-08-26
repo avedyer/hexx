@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 export default function Wheel() {
 
@@ -155,7 +155,7 @@ export default function Wheel() {
   }
 
   function RGBtoHEX(r, g, b) {
-    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)
   }
 
   function RGBtoHSL(r, g, b) {
@@ -221,7 +221,7 @@ export default function Wheel() {
   function getPixelColor(coords) {
 
     let canvas = document.getElementById('wheel')
-    let ctx = canvas.getContext("2d")
+    let ctx = canvas.getContext('2d')
     const pixel = ctx.getImageData(coords.x, coords.y, 1, 1)
 
     const data = pixel.data
@@ -313,33 +313,33 @@ export default function Wheel() {
       <div id='controls'>
         <div id='wheel-container' style={{width: `${radius * 2}px`, height: `${radius * 2}px`}}>
           <canvas id='wheel' width={radius * 2} height={radius * 2}/>
-          <div id="color-selector" 
+          <div id='color-selector' 
             style={{width: `${radius * 2}px`, height: `${radius * 2}px`}}
             onMouseDown={() => setTracking(true)} 
               onMouseMove={(e) => moveHandle(e)} 
               onMouseUp={() => setTracking(false)}  //Tracking state keeps handle from being sticky.
               onClick={(e) => moveHandle(e)}
             >
-            <div id="handle" style={{top: '0', left: `calc(50% - ${handleRadius}px)`}}/>
+            <div id='handle' style={{top: '0', left: `calc(50% - ${handleRadius}px)`}}/>
             {Array.from(Array(quantity - 1)).map(() => 
-              (<div className="eyedropper"/>)
+              (<div className='eyedropper'/>)
             )}
           </div>
         </div>
         <div id='wheel-settings' className='options' style={{width: `${radius * 2}px`}}>
-          <div id="lightness-slider">
-            <input type="range" 
-              defaultValue="1" min="0" max="1" step={0.02}
+          <div id='lightness-slider'>
+            <input type='range' 
+              defaultValue='1' min='0' max='1' step={0.02}
               onChange={(e) => setLightness(e.target.value)} //Controls lightness setting of filter
             />
           </div>
           <div id='dropper-settings'>
-            <div className="slider-container">
-              <input id='quantity-selector' type="range" defaultValue='1' min="1" max = "6" onChange={(e) => setQuantity(e.target.value)}/>
+            <div className='slider-container'>
+              <input id='quantity-selector' type='range' defaultValue='1' min='1' max = '6' onChange={(e) => setQuantity(e.target.value)}/>
               <label for='quantity-selector'>Pallette Size</label>
             </div>
-            <div className="slider-container">
-              <input id='range-selector' type="range"  defaultValue="0.5" min="0" max="1" step='.01' onChange={(e) => setRange(e.target.value)}/>
+            <div className='slider-container'>
+              <input id='range-selector' type='range'  defaultValue='0.5' min='0' max='1' step='.01' onChange={(e) => setRange(e.target.value)}/>
               <label for='range-selector'>Spread</label>
             </div>
           </div>
@@ -348,9 +348,9 @@ export default function Wheel() {
       <div id='color-info'>
         <div id='pallette' style={{height: `${(radius * 2) + 16}px`}}>
           {Array.from(  'x'.repeat(quantity)).map((item, index) => 
-            <div className="swatch-container">
-              <div className="swatch" key={`color${index}`} id={`color${index}`} style={{backgroundColor: colors[index]}} />
-              <span className="label">{colorLabels[index]}</span>
+            <div className='swatch-container'>
+              <div className='swatch' key={`color${index}`} id={`color${index}`} style={{backgroundColor: colors[index]}} />
+              <span className='label'>{colorLabels[index]}</span>
             </div>
           )}
         </div>

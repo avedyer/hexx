@@ -5,7 +5,7 @@ import Footer from './footer';
 function App() {
 
   return (
-    <div className="App">
+    <div className='App'>
       <Wheel />
       <Footer />
     </div>
