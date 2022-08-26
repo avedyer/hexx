@@ -2,18 +2,18 @@ import { useEffect, useState } from 'react';
 
 export default function Wheel() {
 
-  const [initialized, setInitialized] = useState(false)
-  const [radius, setRadius] = useState()
-  const [rendered, setRendered] = useState(false)
+  const [initialized, setInitialized] = useState(false) //True when canvas element is placed
+  const [radius, setRadius] = useState() //Radius of color wheel
+  const [rendered, setRendered] = useState(false) //True when color wheel is rendered to canvas
 
-  const [lightness ,setLightness] = useState(1)
-  const [quantity, setQuantity] = useState(1)
-  const [range, setRange] = useState(0.5)
+  const [lightness ,setLightness] = useState(1) //Lightness value at center of wheel
+  const [quantity, setQuantity] = useState(1) //Number of eyedroppers
+  const [range, setRange] = useState(0.5) //Percentage of the wheel's circumfrence encompassed by full set of eyedroppers
 
-  const [tracking, setTracking] = useState(false)
+  const [tracking, setTracking] = useState(false) //True when handle is following the mouse
   const [handleCoords, setHandleCoords] = useState()
-  const [colors, setColors] = useState([])
-  const [colorLabels, setColorLabels] = useState([])
+  const [colors, setColors] = useState([]) //Colors selected by eyedroppers in HSL format
+  const [colorLabels, setColorLabels] = useState([]) //Pallette labels based on selected model
   const [model, setModel] = useState('hsl')
 
   const handleRadius = 8
@@ -203,7 +203,7 @@ export default function Wheel() {
 
     if (overspill > 0) {
 
-      //Gradually adjust position of dropper based on 
+      //Gradually adjust position of dropper based on overspill value
 
       const radAngle = Math.abs(Math.atan(sides.x / sides.y))
       const ratio = radAngle * 2 / Math.PI //ratio of overspill in x direction over y direction
